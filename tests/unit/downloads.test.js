@@ -1,0 +1,337 @@
+import {
+  sanitizeFilename,
+  guessMimeTypeFromName,
+  clearTabDownloads,
+  clearSessionDownloads,
+  attachDownloadListener,
+  clickWithDownloadGuard,
+  downloadEventOccurredSince,
+  captureFetchedResource,
+  getDownloadsList,
+  readDownloadContent,
+  cleanupExpiredDownloads,
+  MAX_DOWNLOAD_ARTIFACT_BYTES,
+  DOWNLOAD_ROOT,
+} from '../../lib/downloads.js';
+
+import fs from 'node:fs/promises';
+import os from 'os';
+import path from 'path';
+
+describe('lib/downloads', () => {
+  describe('sanitizeFilename', () => {
+    test('passes through normal filenames', () => {
+      expect(sanitizeFilename('hello.txt')).toBe('hello.txt');
+      expect(sanitizeFilename('photo.png')).toBe('photo.png');
+    });
+
+    test('replaces dangerous characters', () => {
+      expect(sanitizeFilename('file/name:bad?.txt')).toBe('file_name_bad_.txt');
+      expect(sanitizeFilename('a\\b<c>d|e"f')).toBe('a_b_c_d_e_f');
+    });
+
+    test('strips null bytes and control chars', () => {
+      expect(sanitizeFilename('file\x00name\x01.txt')).toBe('file_name_.txt');
+    });
+
+    test('truncates to 200 chars', () => {
+      const long = 'a'.repeat(250) + '.txt';
+      expect(sanitizeFilename(long).length).toBe(200);
+    });
+
+    test('defaults to download.bin for empty/null', () => {
+      expect(sanitizeFilename(null)).toBe('download.bin');
+      expect(sanitizeFilename(undefined)).toBe('download.bin');
+      expect(sanitizeFilename('')).toBe('download.bin');
+    });
+  });
+
+  describe('guessMimeTypeFromName', () => {
+    test('detects common image types', () => {
+      expect(guessMimeTypeFromName('photo.png')).toBe('image/png');
+      expect(guessMimeTypeFromName('photo.jpg')).toBe('image/jpeg');
+      expect(guessMimeTypeFromName('photo.jpeg')).toBe('image/jpeg');
+      expect(guessMimeTypeFromName('anim.gif')).toBe('image/gif');
+      expect(guessMimeTypeFromName('pic.webp')).toBe('image/webp');
+      expect(guessMimeTypeFromName('icon.svg')).toBe('image/svg+xml');
+    });
+
+    test('case insensitive', () => {
+      expect(guessMimeTypeFromName('PHOTO.PNG')).toBe('image/png');
+      expect(guessMimeTypeFromName('Photo.JPG')).toBe('image/jpeg');
+    });
+
+    test('falls back to octet-stream', () => {
+      expect(guessMimeTypeFromName('data.bin')).toBe('application/octet-stream');
+      expect(guessMimeTypeFromName('archive.zip')).toBe('application/octet-stream');
+      expect(guessMimeTypeFromName(null)).toBe('application/octet-stream');
+    });
+  });
+
+  describe('clearTabDownloads', () => {
+    test('clears array and deletes temp files', async () => {
+      const tmpFile = path.join(os.tmpdir(), `camofox-test-${Date.now()}.tmp`);
+      await fs.writeFile(tmpFile, 'test');
+
+      const tabState = {
+        downloads: [
+          { id: '1', filePath: tmpFile },
+          { id: '2', filePath: null },
+        ],
+      };
+
+      await clearTabDownloads(tabState);
+      expect(tabState.downloads).toEqual([]);
+
+      // file should be deleted
+      await expect(fs.stat(tmpFile)).rejects.toThrow();
+    });
+
+    test('handles empty downloads gracefully', async () => {
+      const tabState = { downloads: [] };
+      await clearTabDownloads(tabState);
+      expect(tabState.downloads).toEqual([]);
+    });
+  });
+
+  describe('clearSessionDownloads', () => {
+    test('clears downloads across all tab groups', async () => {
+      const tab1 = { downloads: [{ id: '1', filePath: null }] };
+      const tab2 = { downloads: [{ id: '2', filePath: null }] };
+      const group = new Map([['t1', tab1], ['t2', tab2]]);
+      const session = { tabGroups: new Map([['g1', group]]) };
+
+      await clearSessionDownloads(session);
+      expect(tab1.downloads).toEqual([]);
+      expect(tab2.downloads).toEqual([]);
+    });
+
+    test('handles null/missing session gracefully', async () => {
+      await clearSessionDownloads(null);
+      await clearSessionDownloads({});
+      await clearSessionDownloads({ tabGroups: null });
+    });
+  });
+
+  describe('download events', () => {
+    test('records the event before a slow save finishes', async () => {
+      let handler;
+      let releaseSave;
+      const savePending = new Promise((resolve) => { releaseSave = resolve; });
+      const tabState = {
+        downloads: [],
+        downloadEventSequence: 0,
+        visitedUrls: new Set(),
+        page: { on: (_event, callback) => { handler = callback; } },
+      };
+      const log = () => {};
+      const download = {
+        suggestedFilename: () => 'slow.txt',
+        url: () => 'https://example.com/slow.txt',
+        saveAs: async (filePath) => {
+          await savePending;
+          await fs.writeFile(filePath, 'done');
+        },
+        failure: async () => null,
+      };
+
+      attachDownloadListener(tabState, 'tab-1', log);
+      const save = handler(download);
+
+      expect(tabState.downloadEventSequence).toBe(1);
+      expect(downloadEventOccurredSince(tabState, 0)).toBe(true);
+      expect(tabState.downloads).toEqual([]);
+
+      releaseSave();
+      await save;
+      await clearTabDownloads(tabState);
+    });
+  });
+
+  describe('download failure cleanup', () => {
+    test('removes persisted artifact when download reports failure', async () => {
+      let handler;
+      let stagingPath;
+      const tabState = {
+        downloads: [],
+        downloadEventSequence: 0,
+        visitedUrls: new Set(),
+        page: { on: (_event, callback) => { handler = callback; } },
+      };
+      const download = {
+        suggestedFilename: () => 'failed.txt',
+        url: () => 'https://example.com/failed.txt',
+        saveAs: async (filePath) => {
+          stagingPath = filePath;
+          await fs.writeFile(filePath, 'failed content');
+        },
+        failure: async () => 'download canceled',
+      };
+
+      attachDownloadListener(tabState, 'tab-1', () => {});
+      await handler(download);
+
+      const downloadId = path.basename(stagingPath, '.staging');
+      const persistedPath = path.join(DOWNLOAD_ROOT, `${downloadId}.bin`);
+      await expect(fs.stat(persistedPath)).rejects.toThrow();
+      expect(tabState.downloads[0]).toMatchObject({
+        id: downloadId,
+        state: 'failed',
+        failure: 'download canceled',
+        filePath: null,
+      });
+      await expect(readDownloadContent(tabState, downloadId, '')).resolves.toBeNull();
+    });
+  });
+
+  describe('click fallback guard', () => {
+    test('does not reject after a click emits a download event', async () => {
+      const tabState = { downloadEventSequence: 0 };
+      let calls = 0;
+      const click = async () => {
+        calls += 1;
+        tabState.downloadEventSequence += 1;
+        throw new Error('locator.click: Timeout 3000ms exceeded');
+      };
+
+      await expect(clickWithDownloadGuard(tabState, click)).resolves.toBeUndefined();
+      expect(calls).toBe(1);
+    });
+
+    test('preserves click errors when no download event is emitted', async () => {
+      const error = new Error('locator.click: Timeout 3000ms exceeded');
+
+      await expect(clickWithDownloadGuard({ downloadEventSequence: 0 }, async () => {
+        throw error;
+      })).rejects.toBe(error);
+    });
+  });
+
+  describe('getDownloadsList', () => {
+    test('returns metadata without data by default', async () => {
+      const tabState = {
+        downloads: [{
+          id: 'abc',
+          url: 'https://example.com/file.png',
+          suggestedFilename: 'file.png',
+          mimeType: 'image/png',
+          bytes: 1024,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          filePath: '/tmp/nonexistent',
+          failure: null,
+        }],
+      };
+
+      const result = await getDownloadsList(tabState);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('abc');
+      expect(result[0].suggestedFilename).toBe('file.png');
+      expect(result[0].dataBase64).toBeUndefined();
+      // filePath must not leak to response
+      expect(result[0].filePath).toBeUndefined();
+    });
+
+    test('includes base64 data when includeData is true', async () => {
+      const tmpFile = path.join(os.tmpdir(), `camofox-test-dl-${Date.now()}.tmp`);
+      await fs.writeFile(tmpFile, 'hello world');
+
+      const tabState = {
+        downloads: [{
+          id: 'x1',
+          url: '',
+          suggestedFilename: 'hello.txt',
+          mimeType: 'application/octet-stream',
+          bytes: 11,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          filePath: tmpFile,
+          failure: null,
+        }],
+      };
+
+      const result = await getDownloadsList(tabState, { includeData: true });
+      expect(result[0].dataBase64).toBe(Buffer.from('hello world').toString('base64'));
+
+      await fs.unlink(tmpFile).catch(() => {});
+    });
+
+    test('skips data when bytes exceed maxBytes', async () => {
+      const tabState = {
+        downloads: [{
+          id: 'big',
+          url: '',
+          suggestedFilename: 'big.bin',
+          mimeType: 'application/octet-stream',
+          bytes: 5000,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          filePath: '/tmp/whatever',
+          failure: null,
+        }],
+      };
+
+      const result = await getDownloadsList(tabState, { includeData: true, maxBytes: 1000 });
+      expect(result[0].dataSkipped).toBe('max_bytes_exceeded');
+      expect(result[0].dataBase64).toBeUndefined();
+    });
+
+    test('reports readError when file is missing', async () => {
+      const tabState = {
+        downloads: [{
+          id: 'gone',
+          url: '',
+          suggestedFilename: 'gone.txt',
+          mimeType: 'application/octet-stream',
+          bytes: 10,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          filePath: '/tmp/camofox-definitely-does-not-exist-xyz',
+          failure: null,
+        }],
+      };
+
+      const result = await getDownloadsList(tabState, { includeData: true });
+      expect(result[0].readError).toBeDefined();
+    });
+    test('returns fetch metadata and enforces owner for content', async () => {
+      const downloadId = `content-${Date.now()}`;
+      const tmpFile = path.join(DOWNLOAD_ROOT, `${downloadId}.bin`);
+      await fs.mkdir(DOWNLOAD_ROOT, { recursive: true });
+      await fs.writeFile(tmpFile, Buffer.from('raw bytes'));
+      const tabState = { downloads: [{ id: downloadId, owner: 'alice', state: 'completed', filePath: tmpFile, createdAt: new Date().toISOString() }] };
+      await expect(readDownloadContent(tabState, downloadId, 'bob')).resolves.toBeNull();
+      const result = await readDownloadContent(tabState, downloadId, 'alice');
+      expect(result.data.toString()).toBe('raw bytes');
+      await fs.unlink(tmpFile);
+    });
+
+    test('persists fetched resources as owned artifacts', async () => {
+      const tabState = { downloads: [] };
+      const download = await captureFetchedResource(tabState, {
+        url: 'https://example.com/report.pdf',
+        mimeType: 'application/pdf',
+        filename: 'report.pdf',
+        body: Buffer.from('%PDF-test'),
+        userId: 'alice',
+        tabId: 'tab-1',
+      });
+
+      expect(download.tabId).toBe('tab-1');
+      expect(download.state).toBe('completed');
+      await expect(readDownloadContent(tabState, download.id, 'bob')).resolves.toBeNull();
+      const result = await readDownloadContent(tabState, download.id, 'alice');
+      expect(result.data.toString()).toBe('%PDF-test');
+      await clearTabDownloads(tabState);
+    });
+
+    test('removes expired artifacts', async () => {
+      const tmpFile = path.join(os.tmpdir(), `camofox-test-expired-${Date.now()}.bin`);
+      await fs.writeFile(tmpFile, 'expired');
+      const tabState = { downloads: [{ id: 'expired', filePath: tmpFile, expiresAt: new Date(Date.now() - 1).toISOString() }] };
+      await cleanupExpiredDownloads(tabState);
+      expect(tabState.downloads).toEqual([]);
+      await expect(fs.stat(tmpFile)).rejects.toThrow();
+    });
+
+    test('publishes the bounded artifact size', () => {
+      expect(MAX_DOWNLOAD_ARTIFACT_BYTES).toBe(50 * 1024 * 1024);
+    });
+  });
+});
