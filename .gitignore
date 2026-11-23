@@ -1,6 +1,4 @@
 node_modules/
-.env
-.env.local
 .env.*.local
 
 # Logs
@@ -24,7 +22,6 @@ build/
 
 # IDE
 .idea/
-.vscode/
 *.swp
 *.swo
 *~
@@ -45,3 +42,4 @@ playwright-report/
 
 # Local git worktrees (e.g. from parallel delegation runs) — keep them out of test discovery
 .worktrees/
+config.bat

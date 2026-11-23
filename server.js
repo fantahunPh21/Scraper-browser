@@ -843,7 +843,7 @@ function cgroupMemory() {
 
 function memoryCapResponse(res, mem) {
   return res.status(503).json({
-    error: `Camofox is at its memory cap (${mem.usedMb} of ${mem.capMb} MB, ${mem.stalledPct}% stalled); close tabs or raise MemoryHigh`,
+    error: `Scraper Browser is at its memory cap (${mem.usedMb} of ${mem.capMb} MB, ${mem.stalledPct}% stalled); close tabs or raise MemoryHigh`,
     code: 'memory_cap_reached', retryable: false, memory: mem,
   });
 }
@@ -3179,7 +3179,7 @@ async function inputsForRefs(page, refs, { limit = 100 } = {}) {
         // control remains the same element, so neither is an identity source.
         // A replacement node gets a new WeakMap entry; navigation creates a
         // new Document and therefore a new registry.
-        const registryKey = Symbol.for('camofox-browser.input-identity-v1');
+        const registryKey = Symbol.for('scraper-browser.input-identity-v1');
         let registry = document[registryKey];
         if (!registry || !(registry.elements instanceof WeakMap) || !(registry.inputListeners instanceof WeakSet)) {
           const nonce = Array.from(crypto.getRandomValues(new Uint32Array(4)), (part) => part.toString(36)).join('-');
@@ -3594,7 +3594,7 @@ app.post('/tabs', async (req, res) => {
         log('info', 'session overflow redirect', {
           userId: key, sessions: sessions.size, cap: PER_MACHINE_SESSION_CAP,
         });
-        res.set('fly-replay', `app=${CONFIG.flyAppName || 'camofox-browser'}`);
+        res.set('fly-replay', `app=${CONFIG.flyAppName || 'scraper-browser'}`);
         return res.status(307).send();
       }
     }
@@ -3789,7 +3789,7 @@ app.post('/tabs', async (req, res) => {
     // Memory pressure / max sessions → bounce through LB to another machine.
     // A responsive new-page timeout must stay on this machine with its live session.
     if (FLY_MACHINE_ID && err.statusCode === 503 && err.code !== 'new_page_timeout') {
-      res.set('fly-replay', `app=${CONFIG.flyAppName || 'camofox-browser'}`);
+      res.set('fly-replay', `app=${CONFIG.flyAppName || 'scraper-browser'}`);
       return res.status(503).json({ error: safeError(err), code: err.code || 'admission_rejected' });
     }
     handleRouteError(err, req, res);
@@ -5221,7 +5221,7 @@ const UPLOAD_SETTLE_MS = 1500; // let the page process the upload / render a pre
  *     summary: Attach a file to an upload control
  *     description: >
  *       Attaches files from the configured upload directory without going through
- *       the native OS file dialog. Set CAMOFOX_UPLOADS_DIR to a directory that
+ *       the native OS file dialog. Set SCRAPER_UPLOADS_DIR (or CAMOFOX_UPLOADS_DIR) to a directory that
  *       contains the files (default: ~/.camofox/uploads). Two strategies are
  *       tried in order: (1) if an
  *       <input type="file"> is already present, call Playwright setInputFiles
@@ -5246,7 +5246,7 @@ const UPLOAD_SETTLE_MS = 1500; // let the page process the upload / render a pre
  *               userId:
  *                 type: string
  *               path:
- *                 description: "Absolute path, or array of paths, that resolves within CAMOFOX_UPLOADS_DIR."
+ *                 description: "Absolute path, or array of paths, that resolves within SCRAPER_UPLOADS_DIR (or CAMOFOX_UPLOADS_DIR)."
  *                 oneOf:
  *                   - type: string
  *                   - type: array
