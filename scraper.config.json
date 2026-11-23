@@ -1,0 +1,21 @@
+{
+  "id": "scraper-browser",
+  "name": "Scraper Browser",
+  "version": "1.6.0",
+  "newPageTimeoutMs": 30000,
+  "interactive": {
+    "mode": "off"
+  },
+  "plugins": {
+    "youtube": {
+      "enabled": true
+    },
+    "persistence": {
+      "enabled": true
+    },
+    "vnc": {
+      "enabled": false,
+      "resolution": "1920x1080"
+    }
+  }
+}

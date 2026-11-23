@@ -1,6 +1,6 @@
-# camofox-browser Agent Guide
+# scraper-browser Agent Guide
 
-Headless browser automation server for AI agents. Run locally or deploy to any cloud provider.
+Headless browser automation server for AI agents (Scraper Browser). Run locally or deploy to any cloud provider. Powered by Camoufox anti-detection engine. Compatible with `scraper_*` and `camofox_*` tools and environment variables.
 
 ## Quick Start for Agents
 

@@ -8,10 +8,10 @@ import { join } from 'node:path';
  */
 export function loadMcpConfig() {
   return {
-    port: parseInt(process.env.CAMOFOX_PORT || process.env.PORT || '9377', 10),
-    apiKey: process.env.CAMOFOX_API_KEY || '',
-    accessKey: (process.env.CAMOFOX_ACCESS_KEY || '').trim(),
-    cookiesDir: process.env.CAMOFOX_COOKIES_DIR || join(os.homedir(), '.camofox', 'cookies'),
-    allowedUserIds: (process.env.CAMOFOX_MCP_USER_IDS || '').split(',').map((s) => s.trim()).filter(Boolean),
+    port: parseInt((process.env.SCRAPER_PORT || process.env.CAMOFOX_PORT) || process.env.PORT || '9377', 10),
+    apiKey: (process.env.SCRAPER_API_KEY || process.env.CAMOFOX_API_KEY) || '',
+    accessKey: ((process.env.SCRAPER_ACCESS_KEY || process.env.CAMOFOX_ACCESS_KEY) || '').trim(),
+    cookiesDir: (process.env.SCRAPER_COOKIES_DIR || process.env.CAMOFOX_COOKIES_DIR) || join(os.homedir(), '.scraper', 'cookies'),
+    allowedUserIds: ((process.env.SCRAPER_MCP_USER_IDS || process.env.CAMOFOX_MCP_USER_IDS) || '').split(',').map((s) => s.trim()).filter(Boolean),
   };
 }

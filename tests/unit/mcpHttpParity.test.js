@@ -91,7 +91,7 @@ function mcpReachable() {
   const out = new Set();
   for (const name of TOOL_NAMES) {
     let spec;
-    if (name === 'camofox_import_cookies') {
+    if (name === 'camofox_import_cookies' || name === 'scraper_import_cookies') {
       // Async cookie builder — its route is fixed and known.
       spec = { method: 'POST', path: `/sessions/${CTX.userId}/cookies` };
     } else {

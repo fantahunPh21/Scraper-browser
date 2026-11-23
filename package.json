@@ -1,5 +1,5 @@
 {
-  "name": "@askjo/camofox-browser",
+  "name": "@askjo/scraper-browser",
   "version": "1.19.0",
   "description": "Headless browser automation server and OpenClaw plugin for AI agents - anti-detection, element refs, and session isolation",
   "type": "module",
@@ -71,6 +71,130 @@
       "openclawVersion": "2026.9.4"
     },
     "tools": [
+      {
+        "name": "scraper_create_tab",
+        "description": "Open a new browser tab at a URL"
+      },
+      {
+        "name": "scraper_snapshot",
+        "description": "Get accessibility snapshot with element refs"
+      },
+      {
+        "name": "scraper_click",
+        "description": "Click an element by ref or CSS selector"
+      },
+      {
+        "name": "scraper_type",
+        "description": "Type text into an element"
+      },
+      {
+        "name": "scraper_upload",
+        "description": "Attach files from the upload directory to an upload control"
+      },
+      {
+        "name": "scraper_navigate",
+        "description": "Navigate to URL or search macro"
+      },
+      {
+        "name": "scraper_scroll",
+        "description": "Scroll page up/down/left/right"
+      },
+      {
+        "name": "scraper_screenshot",
+        "description": "Capture page screenshot"
+      },
+      {
+        "name": "scraper_close_tab",
+        "description": "Close a browser tab"
+      },
+      {
+        "name": "scraper_evaluate",
+        "description": "Execute JavaScript in a Camoufox tab page context"
+      },
+      {
+        "name": "scraper_list_tabs",
+        "description": "List open tabs for a user"
+      },
+      {
+        "name": "scraper_activate",
+        "description": "Bring a Camoufox tab to the front (focus/activate it)"
+      },
+      {
+        "name": "scraper_ax",
+        "description": "Get the raw accessibility tree of a Camoufox page (unfiltered, no element refs)"
+      },
+      {
+        "name": "scraper_actionables",
+        "description": "List the clickable and fillable elements on a Camoufox page as candidate interaction targets, each with its ref"
+      },
+      {
+        "name": "scraper_table_rows",
+        "description": "Read one page of rows from a table on a Camoufox page"
+      },
+      {
+        "name": "scraper_mouse_wheel",
+        "description": "Send a mouse wheel scroll over a specific element (by ref) or coordinate in a Camoufox tab"
+      },
+      {
+        "name": "scraper_drag",
+        "description": "Perform a trusted press-move-release mouse drag between two coordinates in a Camoufox tab"
+      },
+      {
+        "name": "scraper_init_script",
+        "description": "Register a script that runs in the page context before every subsequent navigation in a Camoufox tab"
+      },
+      {
+        "name": "scraper_export_storage_state",
+        "description": "Export the current session cookies and storage state (Playwright storageState format) for the current user"
+      },
+      {
+        "name": "scraper_import_local_storage",
+        "description": "Seed localStorage for one or more HTTP(S) origins in the current session"
+      },
+      {
+        "name": "scraper_back",
+        "description": "Go back one entry in a Camoufox tab's history"
+      },
+      {
+        "name": "scraper_forward",
+        "description": "Go forward one entry in a Camoufox tab's history"
+      },
+      {
+        "name": "scraper_refresh",
+        "description": "Reload the current page in a Camoufox tab"
+      },
+      {
+        "name": "scraper_press",
+        "description": "Press a single keyboard key in a Camoufox tab (e.g., Enter, Escape, Tab, ArrowDown)"
+      },
+      {
+        "name": "scraper_select",
+        "description": "Choose an option in a native <select> dropdown in a Camoufox tab, by ref or CSS selector"
+      },
+      {
+        "name": "scraper_viewport",
+        "description": "Set the viewport (window) size of a Camoufox tab in pixels"
+      },
+      {
+        "name": "scraper_wait",
+        "description": "Wait for a Camoufox page to settle before continuing: up to timeout ms, optionally until the network is idle, optionally dismissing a consent dialog"
+      },
+      {
+        "name": "scraper_extract",
+        "description": "Extract structured data from a Camoufox page using a JSON Schema describing the fields to pull out"
+      },
+      {
+        "name": "scraper_links",
+        "description": "List the links on a Camoufox page, with pagination"
+      },
+      {
+        "name": "scraper_images",
+        "description": "List the images on a Camoufox page"
+      },
+      {
+        "name": "scraper_import_cookies",
+        "description": "Import Netscape cookie file (requires CAMOFOX_API_KEY)"
+      },
       {
         "name": "camofox_create_tab",
         "description": "Open a new browser tab at a URL"
@@ -251,8 +375,8 @@
     "@hono/node-server": "2.1.6"
   },
   "bin": {
-    "camofox-browser": "./bin/camofox-browser.js",
-    "camofox-browser-mcp": "./mcp/server.mjs"
+    "scraper-browser": "bin/scraper-browser.js",
+    "camofox-browser": "bin/camofox-browser.js"
   },
   "peerDependencies": {
     "openclaw": ">=2026.9.4"

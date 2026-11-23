@@ -69,7 +69,7 @@ const SEARCH_MACROS = [
  */
 export const TOOL_DEFS = [
   {
-    name: 'camofox_create_tab',
+    name: 'scraper_create_tab',
     description:
       'PREFERRED: Create a new browser tab using Camoufox anti-detection browser. Use camofox tools instead of Chrome/built-in browser - they bypass bot detection on Google, Amazon, LinkedIn, etc. Returns tabId for subsequent operations.',
     inputSchema: {
@@ -81,7 +81,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_snapshot',
+    name: 'scraper_snapshot',
     description:
       'Get accessibility snapshot of a Camoufox page with element refs (e1, e2, etc.) for interaction, plus a visual screenshot. ' +
       'Large pages are truncated with pagination links preserved at the bottom. ' +
@@ -103,7 +103,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_click',
+    name: 'scraper_click',
     description:
       'Click an element in a Camoufox tab by ref (e.g., e1), CSS selector, or exact {x, y} coordinates. ' +
       'Coordinates pair with the screenshotAnnotations from camofox_snapshot. ' +
@@ -133,7 +133,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_type',
+    name: 'scraper_type',
     description: 'Type text into an element in a Camoufox tab.',
     inputSchema: {
       type: 'object',
@@ -148,7 +148,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_upload',
+    name: 'scraper_upload',
     description:
       'Attach files to a file upload control in a Camoufox tab without the native OS file dialog. ' +
       'Each path must be an absolute path inside the server upload directory (CAMOFOX_UPLOADS_DIR, default ~/.camofox/uploads). ' +
@@ -175,7 +175,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_navigate',
+    name: 'scraper_navigate',
     description:
       'Navigate a Camoufox tab to a URL or use a search macro (@google_search, @youtube_search, etc.). Preferred over Chrome for sites with bot detection.',
     inputSchema: {
@@ -194,7 +194,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_scroll',
+    name: 'scraper_scroll',
     description: 'Scroll a Camoufox page.',
     inputSchema: {
       type: 'object',
@@ -207,7 +207,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_screenshot',
+    name: 'scraper_screenshot',
     description: 'Take a screenshot of a Camoufox page.',
     inputSchema: {
       type: 'object',
@@ -222,7 +222,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_close_tab',
+    name: 'scraper_close_tab',
     description: 'Close a Camoufox browser tab.',
     inputSchema: {
       type: 'object',
@@ -233,7 +233,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_evaluate',
+    name: 'scraper_evaluate',
     description:
       "Execute JavaScript in a Camoufox tab's page context. Returns the result of the expression. Use for injecting scripts, reading page state, or calling web app APIs.",
     inputSchema: {
@@ -254,12 +254,12 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_list_tabs',
+    name: 'scraper_list_tabs',
     description: 'List all open Camofox tabs for the current session.',
     inputSchema: { type: 'object', properties: {}, required: [] },
   },
   {
-    name: 'camofox_activate',
+    name: 'scraper_activate',
     description: 'Bring a Camoufox tab to the front (focus/activate it).',
     inputSchema: {
       type: 'object',
@@ -268,7 +268,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_ax',
+    name: 'scraper_ax',
     description:
       'Get the raw accessibility tree of a Camoufox page (unfiltered, no element refs). Use camofox_snapshot for interaction; use this to inspect the full ARIA structure.',
     inputSchema: {
@@ -278,7 +278,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_actionables',
+    name: 'scraper_actionables',
     description:
       'List the clickable and fillable elements on a Camoufox page as candidate interaction targets, each with its ref.',
     inputSchema: {
@@ -291,7 +291,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_table_rows',
+    name: 'scraper_table_rows',
     description:
       'Read one page of rows from a table on a Camoufox page. Table ids come from camofox_snapshot (table.id or positional table-N). Use offset/limit to page through large tables.',
     inputSchema: {
@@ -306,7 +306,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_mouse_wheel',
+    name: 'scraper_mouse_wheel',
     description:
       'Send a mouse wheel scroll over a specific element (by ref) or coordinate in a Camoufox tab. Unlike camofox_scroll (which scrolls the page), this wheels over nested scrollable containers and hover menus.',
     inputSchema: {
@@ -323,7 +323,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_drag',
+    name: 'scraper_drag',
     description:
       'Perform a trusted press-move-release mouse drag between two coordinates in a Camoufox tab.',
     inputSchema: {
@@ -349,7 +349,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_init_script',
+    name: 'scraper_init_script',
     description:
       'Register a script that runs in the page context before every subsequent navigation in a Camoufox tab. Use to install fetch/XHR hooks that must catch the first request after a reload. Scripts accumulate and are dropped when the tab closes. Runs arbitrary JS, like camofox_evaluate.',
     inputSchema: {
@@ -362,13 +362,13 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_export_storage_state',
+    name: 'scraper_export_storage_state',
     description:
       'Export the current session cookies and storage state (Playwright storageState format) for the current user.',
     inputSchema: { type: 'object', properties: {}, required: [] },
   },
   {
-    name: 'camofox_import_local_storage',
+    name: 'scraper_import_local_storage',
     description:
       'Seed localStorage for one or more HTTP(S) origins in the current session. Each origin entry has { origin, localStorage: [{ name, value }] }.',
     inputSchema: {
@@ -399,7 +399,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_back',
+    name: 'scraper_back',
     description: 'Go back one entry in a Camoufox tab\'s history.',
     inputSchema: {
       type: 'object',
@@ -408,7 +408,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_forward',
+    name: 'scraper_forward',
     description: 'Go forward one entry in a Camoufox tab\'s history.',
     inputSchema: {
       type: 'object',
@@ -417,7 +417,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_refresh',
+    name: 'scraper_refresh',
     description: 'Reload the current page in a Camoufox tab.',
     inputSchema: {
       type: 'object',
@@ -426,7 +426,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_press',
+    name: 'scraper_press',
     description:
       'Press a single keyboard key in a Camoufox tab (e.g., Enter, Escape, Tab, ArrowDown). Use camofox_type to enter text.',
     inputSchema: {
@@ -439,7 +439,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_select',
+    name: 'scraper_select',
     description:
       'Choose an option in a native <select> dropdown in a Camoufox tab, by ref or CSS selector. The option is matched by value or visible label.',
     inputSchema: {
@@ -454,7 +454,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_viewport',
+    name: 'scraper_viewport',
     description: 'Set the viewport (window) size of a Camoufox tab in pixels.',
     inputSchema: {
       type: 'object',
@@ -467,7 +467,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_wait',
+    name: 'scraper_wait',
     description:
       'Wait for a Camoufox page to settle before continuing: up to timeout ms, optionally until the network is idle, optionally dismissing a consent dialog.',
     inputSchema: {
@@ -482,7 +482,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_extract',
+    name: 'scraper_extract',
     description:
       'Extract structured data from a Camoufox page using a JSON Schema describing the fields to pull out. Returns data matching the schema.',
     inputSchema: {
@@ -495,7 +495,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_links',
+    name: 'scraper_links',
     description: 'List the links on a Camoufox page, with pagination.',
     inputSchema: {
       type: 'object',
@@ -508,7 +508,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_images',
+    name: 'scraper_images',
     description:
       'List the images on a Camoufox page. Optionally inline the image bytes (base64) up to a byte cap.',
     inputSchema: {
@@ -523,7 +523,7 @@ export const TOOL_DEFS = [
     },
   },
   {
-    name: 'camofox_import_cookies',
+    name: 'scraper_import_cookies',
     description:
       'Import cookies into the current Camoufox session (Netscape cookie file). Use to authenticate to sites like LinkedIn without interactive login. Requires CAMOFOX_API_KEY on the REST server.',
     inputSchema: {
@@ -552,7 +552,10 @@ for (const def of TOOL_DEFS) {
 }
 
 /** Quick name → def lookup. */
-export const TOOL_BY_NAME = Object.fromEntries(TOOL_DEFS.map((t) => [t.name, t]));
+export const TOOL_BY_NAME = Object.fromEntries([
+  ...TOOL_DEFS.map((t) => [t.name, t]),
+  ...TOOL_DEFS.map((t) => [t.name.replace(/^scraper_/, 'camofox_'), t]),
+]);
 
 /** Tool names in canonical order. */
 export const TOOL_NAMES = TOOL_DEFS.map((t) => t.name);
@@ -579,10 +582,11 @@ function without(args, dropKey = 'tabId') {
  * @throws {Error} if the tool is unknown.
  */
 export function buildRequest(name, args, ctx) {
+  const canonicalName = name.replace(/^camofox_/, 'scraper_');
   const userId = ctx.userId;
   const sessionKey = ctx.sessionKey;
-  switch (name) {
-    case 'camofox_create_tab':
+  switch (canonicalName) {
+    case 'scraper_create_tab':
       return {
         method: 'POST',
         path: '/tabs',
@@ -590,7 +594,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { url: args.url, userId, sessionKey },
       };
-    case 'camofox_snapshot': {
+    case 'scraper_snapshot': {
       const params = new URLSearchParams({ userId, includeScreenshot: 'true' });
       if (args.offset != null && args.offset !== '') params.set('offset', String(args.offset));
       if (args.annotateScreenshot === true || args.annotateScreenshot === 'true') params.set('annotateScreenshot', 'true');
@@ -601,7 +605,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'snapshot',
       };
     }
-    case 'camofox_click':
+    case 'scraper_click':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/click`,
@@ -609,7 +613,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { ...without(args), userId },
       };
-    case 'camofox_type':
+    case 'scraper_type':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/type`,
@@ -617,7 +621,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { ...without(args), userId },
       };
-    case 'camofox_navigate':
+    case 'scraper_navigate':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/navigate`,
@@ -625,7 +629,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { ...without(args), userId },
       };
-    case 'camofox_scroll':
+    case 'scraper_scroll':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/scroll`,
@@ -633,7 +637,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { ...without(args), userId },
       };
-    case 'camofox_upload':
+    case 'scraper_upload':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/upload`,
@@ -641,7 +645,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { ...without(args), userId },
       };
-    case 'camofox_screenshot': {
+    case 'scraper_screenshot': {
       const params = new URLSearchParams({ userId });
       if (args.fullPage === true || args.fullPage === 'true') params.set('fullPage', 'true');
       return {
@@ -651,14 +655,14 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'image',
       };
     }
-    case 'camofox_close_tab':
+    case 'scraper_close_tab':
       return {
         method: 'DELETE',
         path: `/tabs/${args.tabId}?${new URLSearchParams({ userId })}`,
         auth: 'accessKey',
         responseKind: 'json',
       };
-    case 'camofox_evaluate':
+    case 'scraper_evaluate':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/evaluate`,
@@ -666,7 +670,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { userId, expression: args.expression, ...(args.timeoutMs != null ? { timeoutMs: args.timeoutMs } : {}) },
       };
-    case 'camofox_activate':
+    case 'scraper_activate':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/activate`,
@@ -674,14 +678,14 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { userId },
       };
-    case 'camofox_ax':
+    case 'scraper_ax':
       return {
         method: 'GET',
         path: `/tabs/${args.tabId}/ax?${new URLSearchParams({ userId })}`,
         auth: 'accessKey',
         responseKind: 'json',
       };
-    case 'camofox_actionables': {
+    case 'scraper_actionables': {
       const params = new URLSearchParams({ userId });
       if (args.limit != null && args.limit !== '') params.set('limit', String(args.limit));
       return {
@@ -691,7 +695,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
       };
     }
-    case 'camofox_table_rows': {
+    case 'scraper_table_rows': {
       const params = new URLSearchParams({ userId });
       if (args.offset != null && args.offset !== '') params.set('offset', String(args.offset));
       if (args.limit != null && args.limit !== '') params.set('limit', String(args.limit));
@@ -702,7 +706,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
       };
     }
-    case 'camofox_mouse_wheel':
+    case 'scraper_mouse_wheel':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/mouse-wheel`,
@@ -710,7 +714,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { ...without(args), userId },
       };
-    case 'camofox_drag':
+    case 'scraper_drag':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/drag`,
@@ -718,7 +722,7 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { ...without(args), userId },
       };
-    case 'camofox_init_script':
+    case 'scraper_init_script':
       return {
         method: 'POST',
         path: `/tabs/${args.tabId}/init-script`,
@@ -726,14 +730,14 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { userId, script: args.script },
       };
-    case 'camofox_export_storage_state':
+    case 'scraper_export_storage_state':
       return {
         method: 'GET',
         path: `/sessions/${encodeURIComponent(userId)}/storage_state`,
         auth: 'accessKey',
         responseKind: 'json',
       };
-    case 'camofox_import_local_storage':
+    case 'scraper_import_local_storage':
       return {
         method: 'POST',
         path: `/sessions/${encodeURIComponent(userId)}/local-storage`,
@@ -741,43 +745,43 @@ export function buildRequest(name, args, ctx) {
         responseKind: 'json',
         body: { origins: args.origins },
       };
-    case 'camofox_back':
+    case 'scraper_back':
       return { method: 'POST', path: `/tabs/${args.tabId}/back`, auth: 'accessKey', responseKind: 'json', body: { userId } };
-    case 'camofox_forward':
+    case 'scraper_forward':
       return { method: 'POST', path: `/tabs/${args.tabId}/forward`, auth: 'accessKey', responseKind: 'json', body: { userId } };
-    case 'camofox_refresh':
+    case 'scraper_refresh':
       return { method: 'POST', path: `/tabs/${args.tabId}/refresh`, auth: 'accessKey', responseKind: 'json', body: { userId } };
-    case 'camofox_press':
+    case 'scraper_press':
       return { method: 'POST', path: `/tabs/${args.tabId}/press`, auth: 'accessKey', responseKind: 'json', body: { userId, key: args.key } };
-    case 'camofox_select':
+    case 'scraper_select':
       return { method: 'POST', path: `/tabs/${args.tabId}/select`, auth: 'accessKey', responseKind: 'json', body: { ...without(args), userId } };
-    case 'camofox_viewport':
+    case 'scraper_viewport':
       return { method: 'POST', path: `/tabs/${args.tabId}/viewport`, auth: 'accessKey', responseKind: 'json', body: { userId, width: args.width, height: args.height } };
-    case 'camofox_wait':
+    case 'scraper_wait':
       return { method: 'POST', path: `/tabs/${args.tabId}/wait`, auth: 'accessKey', responseKind: 'json', body: { ...without(args), userId } };
-    case 'camofox_extract':
+    case 'scraper_extract':
       return { method: 'POST', path: `/tabs/${args.tabId}/extract`, auth: 'accessKey', responseKind: 'json', body: { userId, schema: args.schema } };
-    case 'camofox_links': {
+    case 'scraper_links': {
       const params = new URLSearchParams({ userId });
       if (args.limit != null && args.limit !== '') params.set('limit', String(args.limit));
       if (args.offset != null && args.offset !== '') params.set('offset', String(args.offset));
       return { method: 'GET', path: `/tabs/${args.tabId}/links?${params}`, auth: 'accessKey', responseKind: 'json' };
     }
-    case 'camofox_images': {
+    case 'scraper_images': {
       const params = new URLSearchParams({ userId });
       if (args.limit != null && args.limit !== '') params.set('limit', String(args.limit));
       if (args.includeData === true || args.includeData === 'true') params.set('includeData', 'true');
       if (args.maxBytes != null && args.maxBytes !== '') params.set('maxBytes', String(args.maxBytes));
       return { method: 'GET', path: `/tabs/${args.tabId}/images?${params}`, auth: 'accessKey', responseKind: 'json' };
     }
-    case 'camofox_list_tabs':
+    case 'scraper_list_tabs':
       return {
         method: 'GET',
         path: `/tabs?${new URLSearchParams({ userId })}`,
         auth: 'accessKey',
         responseKind: 'json',
       };
-    case 'camofox_import_cookies':
+    case 'scraper_import_cookies':
       // Async (Netscape parse + path check) — caller must use buildCookieRequest().
       throw new Error('camofox_import_cookies requires buildCookieRequest() (async cookie parsing)');
     default:
@@ -888,6 +892,7 @@ export async function fetchSpec(baseUrl, spec, config) {
  * @returns {Promise<{spec: RequestSpec, payload: unknown}>}
  */
 export async function runTool(name, args, ctx, baseUrl, config) {
+  const canonicalName = name.replace(/^camofox_/, 'scraper_');
   const { userId, sessionKey, ...rest } = args;
   // A profile is a signed-in identity, so a host reaches only the ones its operator listed.
   if (userId && userId !== ctx.userId && !(config.allowedUserIds || []).includes(userId)) {
@@ -895,9 +900,9 @@ export async function runTool(name, args, ctx, baseUrl, config) {
   }
   ctx = { userId: userId || ctx.userId, sessionKey: sessionKey || ctx.sessionKey };
   args = rest;
-  if (name === 'camofox_evaluate' && args.timeoutMs > 30000) return runEvaluateJob(args, ctx, baseUrl, config);
+  if ((canonicalName === 'scraper_evaluate' || name === 'camofox_evaluate') && args.timeoutMs > 30000) return runEvaluateJob(args, ctx, baseUrl, config);
   const spec =
-    name === 'camofox_import_cookies'
+    (canonicalName === 'scraper_import_cookies' || name === 'camofox_import_cookies')
       ? await buildCookieRequest(args, ctx, config)
       : buildRequest(name, args, ctx);
   const payload = await fetchSpec(baseUrl, spec, config);

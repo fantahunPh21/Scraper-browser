@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="fox.png" alt="camofox-browser" width="200" />
-  <h1>camofox-browser</h1>
-  <p><strong>Anti-detection browser server for AI agents, powered by Camoufox</strong></p>
+  <img src="fox.png" alt="scraper-browser" width="200" />
+  <h1>scraper-browser</h1>
+  <p><strong>Anti-detection browser server for AI agents (Scraper Browser), powered by Camoufox</strong></p>
   <p>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
     <a href="https://github.com/jo-inc/camofox-browser/stargazers"><img src="https://img.shields.io/github/stars/jo-inc/camofox-browser" alt="GitHub stars" /></a>

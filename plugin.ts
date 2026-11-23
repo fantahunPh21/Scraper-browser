@@ -130,7 +130,7 @@ export default function register(api: OpenClawPluginApi) {
   const baseUrl = cfg.url || `http://localhost:${port}`;
   const autoStart = cfg.autoStart !== false; // default true
   const pluginDir = getPluginDir();
-  const fallbackUserId = `camofox-${randomUUID()}`;
+  const fallbackUserId = `scraper-${randomUUID()}`;
 
   // Auto-start server if configured (default: true)
   if (autoStart) {
@@ -176,7 +176,7 @@ export default function register(api: OpenClawPluginApi) {
 
 
   api.registerCommand({
-    name: "camofox",
+    name: "scraper",
     description: "Camoufox browser server control (status, start, stop)",
     handler: async ({ args }) => {
       const subcommand = args?.trim().split(/\s+/, 1)[0] || "status";
@@ -217,7 +217,7 @@ export default function register(api: OpenClawPluginApi) {
   // Gateway methods expose health/status to gateway clients. Gateway handlers
   // answer through respond() rather than returning a value.
   api.registerGatewayMethod(
-    "camofox.health",
+    "scraper.health",
     async ({ respond }) => {
       try {
         const health = (await fetchApi(baseUrl, "/health")) as Record<string, unknown>;

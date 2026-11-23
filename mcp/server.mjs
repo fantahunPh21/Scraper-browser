@@ -43,13 +43,13 @@ const VERSION = JSON.parse(
 // package reads only its own environment settings; CAMOFOX_BASE_URL overrides
 // the derived local URL.
 const CONFIG = loadMcpConfig();
-const BASE_URL = process.env.CAMOFOX_BASE_URL || `http://localhost:${CONFIG.port}`;
+const BASE_URL = (process.env.SCRAPER_BASE_URL || process.env.CAMOFOX_BASE_URL) || `http://localhost:${CONFIG.port}`;
 
 // Per-MCP-server userId so each host session gets an isolated camofox session
 // (cookie/storage partition). Falls back to a random id.
-const USER_ID = process.env.CAMOFOX_USER_ID || `mcp-${randomUUID()}`;
+const USER_ID = (process.env.SCRAPER_USER_ID || process.env.CAMOFOX_USER_ID) || `mcp-${randomUUID()}`;
 // sessionKey partitions tabs within a user (matches plugin.ts fallback "default").
-const SESSION_KEY = process.env.CAMOFOX_SESSION_KEY || "default";
+const SESSION_KEY = (process.env.SCRAPER_SESSION_KEY || process.env.CAMOFOX_SESSION_KEY) || "default";
 
 // The standalone package declares the SDK directly. Surface a clear,
 // actionable error if an incomplete installation is missing it.
@@ -64,7 +64,7 @@ try {
   ListToolsRequestSchema = typesMod.ListToolsRequestSchema;
 } catch {
   console.error(
-    "[camofox-browser-mcp] @modelcontextprotocol/sdk is not installed.\n" +
+    "[scraper-browser-mcp] @modelcontextprotocol/sdk is not installed.\n" +
       "Install the adapter dependencies with: npm install\n" +
       "from the @askjo/camofox-browser-mcp package directory."
   );
@@ -72,7 +72,7 @@ try {
 }
 
 const server = new Server(
-  { name: "camofox-browser", version: VERSION },
+  { name: "scraper-browser", version: VERSION },
   { capabilities: { tools: {} } }
 );
 
@@ -86,7 +86,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args } = req.params;
-  const def = TOOL_DEFS.find((t) => t.name === name);
+  const canonicalName = name.replace(/^camofox_/, "scraper_");
+  const def = TOOL_DEFS.find((t) => t.name === canonicalName || t.name === name);
   if (!def) {
     return {
       isError: true,

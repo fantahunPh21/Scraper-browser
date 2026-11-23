@@ -93,7 +93,7 @@ describe('TOOL_DEFS', () => {
   });
 
   test('click accepts coordinates and semantic preconditions', () => {
-    const schema = TOOL_DEFS.find((t) => t.name === 'camofox_click').inputSchema;
+    const schema = TOOL_DEFS.find((t) => t.name === 'scraper_click' || t.name === 'camofox_click').inputSchema;
     expect(schema.required).toEqual(['tabId']);
     expect(schema.properties.coordinates.required).toEqual(['x', 'y']);
     expect(schema.properties.expected_role.type).toBe('string');
@@ -101,12 +101,12 @@ describe('TOOL_DEFS', () => {
   });
 
   test('snapshot exposes an optional annotateScreenshot boolean', () => {
-    const schema = TOOL_DEFS.find((t) => t.name === 'camofox_snapshot').inputSchema;
+    const schema = TOOL_DEFS.find((t) => t.name === 'scraper_snapshot' || t.name === 'camofox_snapshot').inputSchema;
     expect(schema.properties.annotateScreenshot.type).toBe('boolean');
   });
 
   test('upload requires tabId + path and accepts a string or an array of paths', () => {
-    const schema = TOOL_DEFS.find((t) => t.name === 'camofox_upload').inputSchema;
+    const schema = TOOL_DEFS.find((t) => t.name === 'scraper_upload' || t.name === 'camofox_upload').inputSchema;
     expect(schema.required).toEqual(['tabId', 'path']);
     expect(schema.properties.path.anyOf).toEqual([
       { type: 'string' },
@@ -116,7 +116,7 @@ describe('TOOL_DEFS', () => {
   });
 
   test('screenshot exposes an optional fullPage boolean', () => {
-    const schema = TOOL_DEFS.find((t) => t.name === 'camofox_screenshot').inputSchema;
+    const schema = TOOL_DEFS.find((t) => t.name === 'scraper_screenshot' || t.name === 'camofox_screenshot').inputSchema;
     expect(schema.properties.fullPage.type).toBe('boolean');
     expect(schema.required).toEqual(['tabId']);
   });
@@ -512,7 +512,7 @@ describe('cookie import contract', () => {
 describe('host equivalence', () => {
   test('every tool name is buildable and listed', () => {
     for (const name of TOOL_NAMES) {
-      if (name === 'camofox_import_cookies') {
+      if (name === 'camofox_import_cookies' || name === 'scraper_import_cookies') {
         expect(() => buildRequest(name, {}, CTX)).toThrow(/buildCookieRequest/);
       } else {
         expect(() => buildRequest(name, { tabId: 't1', url: 'u', expression: 'e', text: 'x', direction: 'down' }, CTX)).not.toThrow();
